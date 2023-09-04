@@ -157,7 +157,7 @@ runs:
     - name: Overwrite our file with the incoming one
       if: ${{ inputs.checkout != '$GITHUB_ACTION_PATH/user-data.sh' }}
       shell: bash
-      id: Create user-data-file
+      id: Create-user-data-file
       run: |
         cp $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }} $GITHUB_ACTION_PATH/user-data.sh
 
