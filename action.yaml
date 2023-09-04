@@ -155,23 +155,30 @@ runs:
       uses: actions/checkout@v3
 
     - name: Overwrite our file with the incoming one
-      if: ${{ inputs.ec2_user_data_file != 'no-file-provided' }}
+      if: ${{ inputs.ec2_user_data_file == 'no-file-provided' }}
       shell: bash
       id: Create-user-data-file
       run: |
         echo "Copying default file"
-        cp $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file}} $GITHUB_ACTION_PATH/user-data.sh
-        chmod +x $GITHUB_ACTION_PATH/user-data.sh
+        mv $GITHUB_ACTION_PATH/user-data.sh $GITHUB_WORKSPACE/bitovi-user-data.sh
+    
+    - name: Rename incoming file
+      if: ${{ inputs.ec2_user_data_file != 'no-file-provided' }}
+      shell: bash
+      id: Rename-user-data-file
+      run: |
+        echo "Renaming incoming file"
+        mv $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }} $GITHUB_WORKSPACE/bitovi-user-data.sh
 
     - name: Replace reserved variables for valid values
       shell: bash
       id: Replace-values
       run: |
-        sed -i 's,RESERVED_FOR_REPO_URL,${{ inputs.repo_url }},g' $GITHUB_ACTION_PATH/user-data.sh
-        sed -i 's,RESERVED_FOR_REPO_ACCESS_TOKEN,${{ inputs.repo_access_token }},g' $GITHUB_ACTION_PATH/user-data.sh
+        sed -i 's,RESERVED_FOR_REPO_URL,${{ inputs.repo_url }},g' $GITHUB_WORKSPACE/bitovi-user-data.sh
+        sed -i 's,RESERVED_FOR_REPO_ACCESS_TOKEN,${{ inputs.repo_access_token }},g' $GITHUB_WORKSPACE/bitovi-user-data.sh
         ls -lah $GITHUB_WORKSPACE
         ls -lah $GITHUB_ACTION_PATH
-        cat $GITHUB_ACTION_PATH/user-data.sh
+        cat $GITHUB_WORKSPACE/bitovi-user-data.sh
         exit 0
 
     - name: Deploy with BitOps
@@ -215,7 +222,7 @@ runs:
         aws_ec2_instance_root_vol_preserve: ${{ inputs.ec2_root_preserve }}
         aws_ec2_create_keypair_sm: ${{ inputs.create_keypair_sm_entry }}
         aws_ec2_instance_public_ip: true
-        aws_ec2_user_data_file: 'user-data.sh'
+        aws_ec2_user_data_file: 'bitovi-user-data.sh'
         aws_ec2_user_data_replace_on_change: ${{ inputs.ec2_user_data_replace_on_change }}
         aws_ec2_additional_tags: ${{ inputs.ec2_additional_tags }}
 
