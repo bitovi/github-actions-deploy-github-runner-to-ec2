@@ -90,7 +90,7 @@ inputs:
   ec2_user_data_file: 
     description: 'Relative path in the repo for a user provided script to be executed with Terraform EC2 Instance creation.'
     required: false
-    default: "bitovi-user-data.sh"
+    default: 'bitovi-user-data.sh'
   ec2_user_data_replace_on_change:
     description: 'If user_data file changes, instance will stop and start. Hence public IP will change. Defaults to true.'
     required: false
@@ -155,7 +155,7 @@ runs:
       uses: actions/checkout@v3
 
     - name: Overwrite our file with the incoming one
-      if: ${{ inputs.ec2_user_data_file == "bitovi-user-data.sh" }}
+      if: ${{ inputs.ec2_user_data_file == 'bitovi-user-data.sh' }}
       shell: bash
       id: Create-user-data-file
       run: |
