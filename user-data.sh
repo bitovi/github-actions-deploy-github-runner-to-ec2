@@ -35,9 +35,8 @@ sudo -u ubuntu ./config.sh --url $REPO_URL --token $ACCESS_TOKEN --unattended
 # --ephemeral            Configure the runner to only take one job and then let the service un-configure the runner after the job finishes (default false)
 
 # Install the runner as a service as ubuntu
-sudo -u ubuntu ./svc.sh install
-sudo -u ubuntu ./svc.sh start
+./svc.sh install
+./svc.sh start
 
 # Add the runner to autostart on boot as ubuntu
-sudo -u ubuntu systemctl enable actions-runner
-sudo -u ubuntu echo "Used the action file" > result
+systemctl enable actions-runner
