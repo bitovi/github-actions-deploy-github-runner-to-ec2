@@ -159,7 +159,7 @@ runs:
       shell: bash
       id: Create-user-data-file
       run: |
-        cp $GITHUB_ACTION_PATH/user-data.sh $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }} 
+        cp $GITHUB_ACTION_PATH/user-data.sh $GITHUB_WORKSPACE/user-data.sh
 
     - name: Replace reserved variables for valid values
       shell: bash
