@@ -167,6 +167,9 @@ runs:
       run: |
         sed -i "s#RESERVED_FOR_REPO_URL#${{ inputs.repo_url }}#g" $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }}
         sed -i "s#RESERVED_FOR_REPO_ACCESS_TOKEN#${{ inputs.repo_access_token }}#g" $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }}
+        ls -lah $GITHUB_WORKSPACE
+        ls -lah $GITHUB_ACTION_PATH
+        exit 0
 
     - name: Deploy with BitOps
       id: deploy
