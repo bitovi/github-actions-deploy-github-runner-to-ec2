@@ -90,7 +90,7 @@ inputs:
   ec2_user_data_file: 
     description: 'Relative path in the repo for a user provided script to be executed with Terraform EC2 Instance creation.'
     required: false
-    default: 'bitovi-user-data.sh'
+    default: 'no-file-provided'
   ec2_user_data_replace_on_change:
     description: 'If user_data file changes, instance will stop and start. Hence public IP will change. Defaults to true.'
     required: false
@@ -155,22 +155,23 @@ runs:
       uses: actions/checkout@v3
 
     - name: Overwrite our file with the incoming one
-      if: ${{ inputs.ec2_user_data_file == 'bitovi-user-data.sh' }}
+      if: ${{ inputs.ec2_user_data_file != 'no-file-provided' }}
       shell: bash
       id: Create-user-data-file
       run: |
         echo "Copying default file"
-        cp $GITHUB_ACTION_PATH/user-data.sh $GITHUB_WORKSPACE/bitovi-user-data.sh
+        cp $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file}} $GITHUB_ACTION_PATH/user-data.sh
+        chmod +x $GITHUB_ACTION_PATH/user-data.sh
 
     - name: Replace reserved variables for valid values
       shell: bash
       id: Replace-values
       run: |
-        sed -i 's#RESERVED_FOR_REPO_URL#${{ inputs.repo_url }}#g' $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }}
-        sed -i 's#RESERVED_FOR_REPO_ACCESS_TOKEN#${{ inputs.repo_access_token }}#g' $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }}
+        sed -i 's#RESERVED_FOR_REPO_URL#${{ inputs.repo_url }}#g' $GITHUB_ACTION_PATH/${{ inputs.ec2_user_data_file }}
+        sed -i 's#RESERVED_FOR_REPO_ACCESS_TOKEN#${{ inputs.repo_access_token }}#g' $GITHUB_ACTION_PATH/${{ inputs.ec2_user_data_file }}
         ls -lah $GITHUB_WORKSPACE
         ls -lah $GITHUB_ACTION_PATH
-        cat $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }}
+        cat $GITHUB_ACTION_PATH/user-data.sh
         exit 0
 
     - name: Deploy with BitOps
