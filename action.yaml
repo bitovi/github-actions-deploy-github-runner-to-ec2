@@ -90,7 +90,7 @@ inputs:
   ec2_user_data_file: 
     description: 'Relative path in the repo for a user provided script to be executed with Terraform EC2 Instance creation.'
     required: false
-    default: '$GITHUB_ACTION_PATH/user-data.sh'
+    default: bitovi-user-data.sh
   ec2_user_data_replace_on_change:
     description: 'If user_data file changes, instance will stop and start. Hence public IP will change. Defaults to true.'
     required: false
@@ -155,18 +155,18 @@ runs:
       uses: actions/checkout@v3
 
     - name: Overwrite our file with the incoming one
-      if: ${{ inputs.ec2_user_data_file == '$GITHUB_ACTION_PATH/user-data.sh' }}
+      if: ${{ inputs.ec2_user_data_file == 'bitovi-user-data.sh' }}
       shell: bash
       id: Create-user-data-file
       run: |
-        cp $GITHUB_ACTION_PATH/user-data.sh $GITHUB_WORKSPACE/user-data.sh
+        cp $GITHUB_ACTION_PATH/user-data.sh $GITHUB_WORKSPACE/bitovi-user-data.sh
 
     - name: Replace reserved variables for valid values
       shell: bash
       id: Replace-values
       run: |
-        sed -i "s#RESERVED_FOR_REPO_URL#${{ inputs.repo_url }}#g" $GITHUB_WORKSPACE/user-data.sh
-        sed -i "s#RESERVED_FOR_REPO_ACCESS_TOKEN#${{ inputs.repo_access_token }}#g" $GITHUB_WORKSPACE/user-data.sh
+        sed -i "s#RESERVED_FOR_REPO_URL#${{ inputs.repo_url }}#g" $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }}
+        sed -i "s#RESERVED_FOR_REPO_ACCESS_TOKEN#${{ inputs.repo_access_token }}#g" $GITHUB_WORKSPACE/${{ inputs.ec2_user_data_file }}
 
     - name: Deploy with BitOps
       id: deploy
@@ -209,7 +209,7 @@ runs:
         aws_ec2_instance_root_vol_preserve: ${{ inputs.ec2_root_preserve }}
         aws_ec2_create_keypair_sm: ${{ inputs.create_keypair_sm_entry }}
         aws_ec2_instance_public_ip: true
-        aws_ec2_user_data_file: $GITHUB_WORKSPACE/user-data.sh
+        aws_ec2_user_data_file: ${{ inputs.ec2_user_data_file }}
         aws_ec2_user_data_replace_on_change: ${{ inputs.ec2_user_data_replace_on_change }}
         aws_ec2_additional_tags: ${{ inputs.ec2_additional_tags }}
 
