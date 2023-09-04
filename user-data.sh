@@ -18,7 +18,7 @@ sudo -u ubuntu curl -O -L "$(curl -s https://api.github.com/repos/actions/runner
 sudo -u ubuntu tar xzf ./actions-runner-linux-x64*.tar.gz
 
 # Configure the runner using the environment variables as ubuntu
-sudo -u ubuntu ./config.sh --url "$REPO_URL" --token "$ACCESS_TOKEN" --unattended
+sudo -u ubuntu ./config.sh --url $REPO_URL --token $ACCESS_TOKEN --unattended
 #Config Options:
 # --unattended           Disable interactive prompts for missing arguments. Defaults will be used for missing options
 # --url string           Repository to add the runner to. Required if unattended

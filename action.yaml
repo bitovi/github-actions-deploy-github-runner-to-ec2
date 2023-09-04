@@ -167,8 +167,8 @@ runs:
       shell: bash
       id: Replace-values
       run: |
-        sed -i 's#RESERVED_FOR_REPO_URL#${{ inputs.repo_url }}#g' $GITHUB_ACTION_PATH/user-data.sh
-        sed -i 's#RESERVED_FOR_REPO_ACCESS_TOKEN#${{ inputs.repo_access_token }}#g' $GITHUB_ACTION_PATH/user-data.sh
+        sed -i 's,RESERVED_FOR_REPO_URL,${{ inputs.repo_url }},g' $GITHUB_ACTION_PATH/user-data.sh
+        sed -i 's,RESERVED_FOR_REPO_ACCESS_TOKEN,${{ inputs.repo_access_token }},g' $GITHUB_ACTION_PATH/user-data.sh
         ls -lah $GITHUB_WORKSPACE
         ls -lah $GITHUB_ACTION_PATH
         cat $GITHUB_ACTION_PATH/user-data.sh
