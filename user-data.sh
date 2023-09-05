@@ -2,23 +2,28 @@
 # Action file
 REPO_URL=RESERVED_FOR_REPO_URL
 ACCESS_TOKEN=RESERVED_FOR_REPO_ACCESS_TOKEN
+USER=ubuntu
 
 # Update and upgrade packages as root
-sudo apt update -y
-sudo apt upgrade -y
+apt update -y
+apt upgrade -y
 
 # Install prerequisites as root
-sudo apt install -y curl git
+apt install -y curl git ca-certificates gnupg
+
+# Create docker groups and add ubuntu to it
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
 
 # Download the GitHub Actions runner
-
-cd /home/ubuntu
-sudo -u ubuntu mkdir actions-runner && cd actions-runner
-sudo -u ubuntu curl -O -L "$(curl -s https://api.github.com/repos/actions/runner/releases/latest | grep url | cut -d\" -f4 | grep 'actions-runner-linux-x64-[0-9.]\+tar.gz')"
-sudo -u ubuntu tar xzf ./actions-runner-linux-x64*.tar.gz
+cd /home/$USER
+sudo -u $USER mkdir actions-runner && cd actions-runner
+sudo -u $USER curl -O -L "$(curl -s https://api.github.com/repos/actions/runner/releases/latest | grep url | cut -d\" -f4 | grep 'actions-runner-linux-x64-[0-9.]\+tar.gz')"
+sudo -u $USER tar xzf ./actions-runner-linux-x64*.tar.gz
 
 # Configure the runner using the environment variables as ubuntu
-sudo -u ubuntu ./config.sh --url $REPO_URL --token $ACCESS_TOKEN --unattended
+sudo -u $USER ./config.sh --url $REPO_URL --token $ACCESS_TOKEN --unattended
 #Config Options:
 # --unattended           Disable interactive prompts for missing arguments. Defaults will be used for missing options
 # --url string           Repository to add the runner to. Required if unattended
@@ -40,3 +45,16 @@ sudo -u ubuntu ./config.sh --url $REPO_URL --token $ACCESS_TOKEN --unattended
 
 # Add the runner to autostart on boot as ubuntu
 systemctl enable actions-runner
+
+# Install docker -- https://docs.docker.com/engine/install/ubuntu/
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update
+apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
