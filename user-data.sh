@@ -9,7 +9,7 @@ apt update -y
 apt upgrade -y
 
 # Install prerequisites as root
-apt install -y curl git ca-certificates gnupg
+apt install -y curl git ca-certificates gnupg unzip 
 
 # Create docker groups and add ubuntu to it
 sudo groupadd docker
@@ -21,6 +21,7 @@ cd /home/$USER
 sudo -u $USER mkdir actions-runner && cd actions-runner
 sudo -u $USER curl -O -L "$(curl -s https://api.github.com/repos/actions/runner/releases/latest | grep url | cut -d\" -f4 | grep 'actions-runner-linux-x64-[0-9.]\+tar.gz')"
 sudo -u $USER tar xzf ./actions-runner-linux-x64*.tar.gz
+sudo -u $USER rm ./actions-runner-linux-x64*.tar.gz
 
 # Configure the runner using the environment variables as ubuntu
 sudo -u $USER ./config.sh --url $REPO_URL --token $ACCESS_TOKEN --unattended
@@ -58,3 +59,10 @@ echo \
 
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 
+
+# Install aws-cli
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+./aws/install
+
+rm -r awscliv2.zip aws
