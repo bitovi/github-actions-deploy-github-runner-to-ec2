@@ -1,5 +1,6 @@
-# Github-actions-deploy-gh-runner-to-ec2
+# Github-actions-deploy-github-runner-to-ec2
 Deploys a GitHub runner to an EC2 instance. If the user-data.sh file doesn't suits your needs, you can import one.
+We will install awscli and docker.
 
 # Deploy GitHub runner to AWS EC2
 
