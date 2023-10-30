@@ -186,7 +186,7 @@ runs:
 
     - name: Deploy with BitOps
       id: deploy
-      uses: bitovi/github-actions-commons@v0.0.5
+      uses: bitovi/github-actions-commons@v0.0.6
       with:
         # Current repo vars
         gh_action_repo: ${{ github.action_path }}
@@ -200,6 +200,7 @@ runs:
         tf_state_bucket: ${{ inputs.tf_state_bucket }}
         tf_state_bucket_destroy: ${{ inputs.tf_state_bucket_destroy }}
         tf_state_bucket_provider: 'aws'
+        tf_targets: 'module.ec2'
 
         # AWS
         aws_access_key_id: ${{ inputs.aws_access_key_id }}
