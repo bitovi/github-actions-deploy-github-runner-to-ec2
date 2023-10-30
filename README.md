@@ -2,13 +2,14 @@
 Deploys a GitHub runner to an EC2 instance. If the user-data.sh file doesn't suits your needs, you can import one.
 We will install awscli and docker.
 
-## You are here
+## Action Summary
 This action deploys a GitHub runner to an AWS VM (EC2) using user-data file to execute the installation.
 
 If you would like to deploy a backend app/service, check out our other actions:
 | Action | Purpose |
 | ------ | ------- |
 | [Deploy Docker to EC2](https://github.com/bitovi/github-actions-deploy-github-runner-to-ec2) | Deploys a repo with a Dockerized application to a virtual machine (EC2) on AWS |
+| [Deploy React to GitHub Pages](https://github.com/marketplace/actions/deploy-react-to-github-pages) | Builds and deploys a React application to GitHub Pages |
 | [Deploy static site to AWS (S3/CDN/R53)](https://github.com/marketplace/actions/deploy-static-site-to-aws-s3-cdn-r53) | Hosts a static site in AWS S3 with CloudFront |
 <br/>
 
