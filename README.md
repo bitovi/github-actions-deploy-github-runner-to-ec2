@@ -1,4 +1,4 @@
-# Github-actions-deploy-github-runner-to-ec2
+# GitHub actions deploy GitHub runner to EC2
 Deploys a GitHub runner to an EC2 instance. If the user-data.sh file doesn't suits your needs, you can import one.
 We will install awscli and docker.
 
@@ -10,14 +10,12 @@ If you would like to deploy a backend app/service, check out our other actions:
 | ------ | ------- |
 | [Deploy Docker to EC2](https://github.com/bitovi/github-actions-deploy-github-runner-to-ec2) | Deploys a repo with a Dockerized application to a virtual machine (EC2) on AWS |
 | [Deploy static site to AWS (S3/CDN/R53)](https://github.com/marketplace/actions/deploy-static-site-to-aws-s3-cdn-r53) | Hosts a static site in AWS S3 with CloudFront |
-
-And more!, check our [list of actions in the GitHub marketplace](https://github.com/marketplace?category=&type=actions&verification=&query=bitovi)
+<br/>
+And more!, check our list of actions in the [GitHub marketplace](https://github.com/marketplace?category=&type=actions&verification=&query=bitovi).
 
 # Need help or have questions?
 This project is supported by [Bitovi, A DevOps consultancy](https://www.bitovi.com/services/devops-consulting).
-
 You can **get help or ask questions** on our:
-
 - [Discord Community](https://discord.gg/J7ejFsZnJ4Z)
 
 Or, you can hire us for training, consulting, or development. [Set up a free consultation](https://www.bitovi.com/services/devops-consulting).
@@ -71,21 +69,29 @@ jobs:
 
 The following inputs can be used as `steps.with` keys:
 
+### Inputs
+1. [GitHub Commons main inputs](#github-commons-main-inputs)
+1. [GitHub Repo inputs](#github-repo-inputs)
+1. [AWS Specific](#aws-specific)
+1. [Stack Management](#stack-management)
+1. [Secrets and Environment Variables](#secrets-and-environment-variables-inputs)
+1. [EC2 inputs](#ec2-inputs)
+1. [VPC inputs](#vpc-inputs)
+
+
 #### **GitHub Commons main inputs**
 | Name             | Type    | Description                        |
 |------------------|---------|------------------------------------|
 | `checkout` | Boolean | Set to `false` if the code is already checked out. (Default is `true`). |
 | `bitops_code_only` | Boolean | If `true`, will run only the generation phase of BitOps, where the Terraform and Ansible code is built. |
 | `bitops_code_store` | Boolean | Store BitOps generated code as a GitHub artifact. |
-<hr/>
 <br/>
 
-#### **GitHub Repo deatails
+#### **GitHub Repo inputs**
 | Name             | Type    | Description                        |
 |------------------|---------|------------------------------------|
 | `repo_url` | String | URL of the repository the runner will connect to. |
 | `repo_access_token` | String | Token to be used to connect to the repo. Go to Settings -> Actions -> Runner -> Add new self-hosted runner. |
-<hr/>
 <br/>
 
 #### **AWS Specific**
@@ -96,11 +102,17 @@ The following inputs can be used as `steps.with` keys:
 | `aws_session_token` | String | AWS session token |
 | `aws_default_region` | String | AWS default region. Defaults to `us-east-1` |
 | `aws_resource_identifier` | String | Set to override the AWS resource identifier for the deployment. Defaults to `${GITHUB_ORG_NAME}-${GITHUB_REPO_NAME}-${GITHUB_BRANCH_NAME}`. Use with destroy to destroy specific resources. |
+| `additional_tags` | JSON | Add additional tags to the terraform [default tags](https://www.hashicorp.com/blog/default-tags-in-the-terraform-aws-provider), any tags put here will be added to all provisioned resources.|
+<br/>
+
+#### **Stack management**
+| Name             | Type    | Description                        |
+|------------------|---------|------------------------------------|
 | `tf_state_bucket` | String | AWS S3 bucket name to use for Terraform state. See [note](#s3-buckets-naming) | 
 | `tf_state_file_name` | String | Change this to be anything you want to. Carefull to be consistent here. A missing file could trigger recreation, or stepping over destruction of non-defined objects. Defaults to `tf-state-aws`, `tf-state-ecr` or `tf-state-eks.` |
 | `tf_state_file_name_append` | String | Appends a string to the tf-state-file. Setting this to `unique` will generate `tf-state-aws-unique`. (Can co-exist with `tf_state_file_name`) |
 | `tf_state_bucket_destroy` | Boolean | Force purge and deletion of S3 bucket defined. Any file contained there will be destroyed. `tf_stack_destroy` must also be `true`. Default is `false`. |
-<hr/>
+| `stack_destroy` | Boolean | Set to `true` to destroy the stack. |
 <br/>
 
 #### **Secrets and Environment Variables Inputs**
@@ -110,7 +122,6 @@ The following inputs can be used as `steps.with` keys:
 | `env_repo` | String | `.env` file containing environment variables to be used with the app. Name defaults to `repo_env`. |
 | `env_ghs` | String | `.env` file to be used with the app. This is the name of the [Github secret](https://docs.github.com/es/actions/security-guides/encrypted-secrets). |
 | `env_ghv` | String | `.env` file to be used with the app. This is the name of the [Github variables](https://docs.github.com/en/actions/learn-github-actions/variables). |
-<hr/>
 <br/>
 
 #### **EC2 Inputs**
@@ -128,7 +139,6 @@ The following inputs can be used as `steps.with` keys:
 | `ec2_user_data_file` | String | Relative path in the repo for a user provided script to be executed with Terraform EC2 Instance creation. See [this note](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-shell-scripts) |
 | `ec2_user_data_replace_on_change`| Boolean | If `aws_ec2_user_data_file` file changes, instance will stop and start. Hence public IP will change. This will destroy and recreate the instance. Defaults to `true`. |
 | `ec2_additional_tags` | JSON | Add additional tags to the terraform [default tags](https://www.hashicorp.com/blog/default-tags-in-the-terraform-aws-provider), any tags put here will be added to ec2 provisioned resources.|
-<hr/>
 <br/>
 
 #### **VPC Inputs**
@@ -143,15 +153,6 @@ The following inputs can be used as `steps.with` keys:
 | `aws_vpc_id` | String | AWS VPC ID. Accepts `vpc-###` values. |
 | `aws_vpc_subnet_id` | String | AWS VPC Subnet ID. If none provided, will pick one. (Ideal when there's only one) |
 | `aws_vpc_additional_tags` | JSON | Add additional tags to the terraform [default tags](https://www.hashicorp.com/blog/default-tags-in-the-terraform-aws-provider), any tags put here will be added to vpc provisioned resources.|
-<hr/>
-<br/>
-
-#### **Stack Management**
-| `stack_destroy` | Boolean | Set to `true` to destroy the stack. |
-
-#### **Terraform**
-| `additional_tags` | JSON | Add additional tags to the terraform [default tags](https://www.hashicorp.com/blog/default-tags-in-the-terraform-aws-provider), any tags put here will be added to all provisioned resources.|
-<hr/>
 <br/>
 
 ### Note about AWS resource identifiers
