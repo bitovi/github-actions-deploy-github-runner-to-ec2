@@ -1,4 +1,4 @@
-name: 'Deploy GH Runner to AWS (EC2)'
+name: 'Deploy GitHub Runner to AWS (EC2)'
 description: 'Deploy a GitHub runner to an AWS EC2 instance.'
 branding:
   icon: upload-cloud
