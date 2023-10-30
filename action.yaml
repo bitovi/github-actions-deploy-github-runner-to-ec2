@@ -16,9 +16,6 @@ inputs:
     description: 'Store BitOps code as a GitHub artifact'
     required: false
     default: false
-  ansible_skip:
-    description: 'Skip Ansible execution after Terraform excecution.'
-    required: false
 
   # GitHub repo details
   repo_url:
@@ -42,15 +39,22 @@ inputs:
     description: 'AWS default region'
     required: false
     default: us-east-1
+  aws_resource_identifier:
+    description: 'Set to override the AWS resource identifier for the deployment.  Defaults to `${org}-{repo}-{branch}`.  Use with destroy to destroy specific resources.'
+    required: false
   tf_state_bucket:
     description: 'AWS S3 bucket to use for Terraform state. Defaults to `${org}-${repo}-{branch}-tf-state`'
+    required: false
+  tf_state_file_name:
+    description: 'Change this to be anything you want to. Carefull to be consistent here. A missing file could trigger recreation, or stepping over destruction of non-defined objects.'
+    required: false
+  tf_state_file_name_append:
+    description: 'Append a string to the tf-state-file. Setting this to `unique` will generate `tf-state-aws-unique`. Can co-exist with the tf_state_file_name variable. '
     required: false
   tf_state_bucket_destroy:
     description: 'Force purge and deletion of S3 bucket defined. Any file contained there will be destroyed. `stack_destroy` must also be `true`'
     required: false
-  aws_resource_identifier:
-    description: 'Set to override the AWS resource identifier for the deployment.  Defaults to `${org}-{repo}-{branch}`.  Use with destroy to destroy specific resources.'
-    required: false
+
 
   # ENV files
   repo_env:
@@ -87,6 +91,12 @@ inputs:
   ec2_root_preserve:
     description: 'Set this to true to avoid deletion of root volume on termination. Defaults to false.'
     required: false
+  ec2_security_group_name:
+    description: 'The name of the EC2 security group'
+    required: false
+  ec2_create_keypair_sm:
+    required: false
+    description: 'Generates and manages a secret manager entry that contains the public and private keys created for the ec2 instance.'
   ec2_instance_public_ip:
     description: 'Add a public IP to the instance or not. (Not an Elastic IP)'
     required: false
@@ -132,17 +142,12 @@ inputs:
 
   # Stack management
   stack_destroy:
-    description: 'Set to "true" to Destroy the stack. Will delete the elb_logs bucket after the destroy action runs.'
+    description: 'Set to "true" to Destroy the stack.'
     required: false
 
   # Terraform
   additional_tags:
     description: 'A JSON object of additional tags that will be included on created resources. Example: `{"key1": "value1", "key2": "value2"}`'
-    required: false
-
-  # Secret Manager
-  create_keypair_sm_entry:
-    description: "Generates and manages a secret manager entry that contains the public and private keys created for the ec2 instance."
     required: false
 
 outputs:
@@ -181,12 +186,14 @@ runs:
         sed -i 's,RESERVED_FOR_REPO_ACCESS_TOKEN,${{ inputs.repo_access_token }},g' $GITHUB_WORKSPACE/../bitovi-user-data.sh
         ls -lah $GITHUB_WORKSPACE
         ls -lah $GITHUB_ACTION_PATH
+        echo "::group::Final user-data file"  
         cat $GITHUB_WORKSPACE/../bitovi-user-data.sh
+        echo ::endgroup::
         exit 0
 
     - name: Deploy with BitOps
       id: deploy
-      uses: bitovi/github-actions-commons@v0.0.5
+      uses: bitovi/github-actions-commons@v0.0.6
       with:
         # Current repo vars
         gh_action_repo: ${{ github.action_path }}
@@ -198,6 +205,8 @@ runs:
         # Action main inputs
         tf_stack_destroy: ${{ inputs.stack_destroy }}
         tf_state_bucket: ${{ inputs.tf_state_bucket }}
+        tf_state_file_name: ${{ inputs.tf_state_file_name }}
+        tf_state_file_name_append: ${{ inputs.tf_state_file_name_append }}
         tf_state_bucket_destroy: ${{ inputs.tf_state_bucket_destroy }}
         tf_state_bucket_provider: 'aws'
 
@@ -223,6 +232,7 @@ runs:
         aws_ec2_instance_type: ${{ inputs.ec2_instance_type }}
         aws_ec2_instance_root_vol_size: ${{ inputs.ec2_volume_size }}
         aws_ec2_instance_root_vol_preserve: ${{ inputs.ec2_root_preserve }}
+        aws_ec2_security_group_name: ${{ inputs.aws_ec2_security_group_name }}
         aws_ec2_create_keypair_sm: ${{ inputs.create_keypair_sm_entry }}
         aws_ec2_instance_public_ip: ${{ inputs.ec2_instance_public_ip }}
         aws_ec2_user_data_file: '../bitovi-user-data.sh'
