@@ -1,7 +1,7 @@
 # GitHub actions deploy GitHub runner to EC2
 Deploys a GitHub runner to an EC2 instance. If the user-data.sh file doesn't suits your needs, you can import one.
 We will install awscli and docker.
-
+![alt](https://bitovi-gha-pixel-tracker-deployment-main.bitovi-sandbox.com/pixel/2197cm7JU5Ju00GOEwu2R)
 ## Action Summary
 This action deploys a GitHub runner to an AWS VM (EC2) using user-data file to execute the installation.
 
