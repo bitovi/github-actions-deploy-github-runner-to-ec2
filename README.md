@@ -18,7 +18,7 @@ If you would like to deploy a backend app/service, check out our other actions:
 # Need help or have questions?
 This project is supported by [Bitovi, A DevOps consultancy](https://www.bitovi.com/services/devops-consulting).
 You can **get help or ask questions** on our:
-- [Discord Community](https://discord.gg/J7ejFsZnJ4Z)
+- [Discord Community](https://discord.gg/zAHn4JBVcX)
 
 Or, you can hire us for training, consulting, or development. [Set up a free consultation](https://www.bitovi.com/services/devops-consulting).
 
@@ -177,3 +177,9 @@ Would you like to see additional features?  [Create an issue](https://github.com
 
 ## License
 The scripts and documentation in this project are released under the [MIT License](https://github.com/bitovi/github-actions-deploy-github-runner-to-ec2/blob/main/LICENSE).
+
+# Provided by Bitovi
+[Bitovi](https://www.bitovi.com/) is a proud supporter of Open Source software.
+
+# We want to hear from you.
+Come chat with us about open source in our Bitovi community [Discord](https://discord.gg/zAHn4JBVcX)!
