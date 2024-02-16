@@ -200,6 +200,7 @@ inputs:
     required: false
   ec2_user_data_file: # aws_ec2_user_data_file
     required: false
+    default: 'no-file-provided'
   ec2_user_data_replace_on_change: # aws_ec2_user_data_replace_on_change
     required: false
   ec2_additional_tags: # aws_ec2_additional_tags
@@ -215,10 +216,10 @@ runs:
   steps:
     - name: Checkout if required
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Overwrite our file with the incoming one
-      if: ${{ inputs.ec2_user_data_file == 'no-file-provided' }}
+      if: ${{ inputs.aws_ec2_user_data_file == 'no-file-provided' && inputs.ec2_user_data_file == 'no-file-provided' }}
       shell: bash
       id: Create-user-data-file
       run: |
@@ -226,7 +227,7 @@ runs:
         mv $GITHUB_ACTION_PATH/user-data.sh $GITHUB_WORKSPACE/../bitovi-user-data.sh
     
     - name: Rename incoming file
-      if: ${{ inputs.ec2_user_data_file != 'no-file-provided' }}
+      if: ${{ inputs.aws_ec2_user_data_file != 'no-file-provided' || inputs.ec2_user_data_file != 'no-file-provided' }}
       shell: bash
       id: Rename-user-data-file
       run: |
