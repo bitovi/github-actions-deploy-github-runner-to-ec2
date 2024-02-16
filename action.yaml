@@ -285,7 +285,7 @@ runs:
         aws_ec2_ami_owner: ${{ inputs.aws_ec2_ami_owner }}
         aws_ec2_ami_id: ${{ inputs.aws_ec2_ami_id || inputs.ec2_ami_id }}
         aws_ec2_ami_update: ${{ inputs. aws_ec2_ami_update || inputs.ec2_ami_update }}
-        aws_ec2_iam_instance_profile: ${{ inputs.aws_ec2_iam_instance_profile inputs.ec2_instance_profile }}
+        aws_ec2_iam_instance_profile: ${{ inputs.aws_ec2_iam_instance_profile || inputs.ec2_instance_profile }}
         aws_ec2_instance_type: ${{ inputs.aws_ec2_instance_type || inputs.ec2_instance_type }} 
         aws_ec2_instance_root_vol_size: ${{ inputs.aws_ec2_instance_root_vol_size || inputs.ec2_volume_size }}
         aws_ec2_instance_root_vol_preserve: ${{ inputs.aws_ec2_instance_root_vol_preserve || inputs.ec2_root_preserve }}
