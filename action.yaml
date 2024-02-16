@@ -25,25 +25,28 @@ inputs:
     description: 'Repo access token'
     required: true
 
-  # AWS
+  # AWS Specific
   aws_access_key_id:
     description: 'AWS access key ID'
-    required: true
+    required: false
   aws_secret_access_key:
     description: 'AWS secret access key'
-    required: true
+    required: false
   aws_session_token:
     description: 'AWS session token'
     required: false
   aws_default_region:
     description: 'AWS default region'
-    required: false
     default: us-east-1
+    required: false
   aws_resource_identifier:
     description: 'Set to override the AWS resource identifier for the deployment.  Defaults to `${org}-{repo}-{branch}`.  Use with destroy to destroy specific resources.'
     required: false
-  tf_state_bucket:
-    description: 'AWS S3 bucket to use for Terraform state. Defaults to `${org}-${repo}-{branch}-tf-state`'
+  aws_additional_tags:
+    description: 'A JSON object of additional tags that will be included on created resources. Example: `{"key1": "value1", "key2": "value2"}`'
+    required: false
+  tf_stack_destroy:
+    description: 'Set to "true" to Destroy the stack through Terraform.'
     required: false
   tf_state_file_name:
     description: 'Change this to be anything you want to. Carefull to be consistent here. A missing file could trigger recreation, or stepping over destruction of non-defined objects.'
@@ -51,63 +54,74 @@ inputs:
   tf_state_file_name_append:
     description: 'Append a string to the tf-state-file. Setting this to `unique` will generate `tf-state-aws-unique`. Can co-exist with the tf_state_file_name variable. '
     required: false
-  tf_state_bucket_destroy:
-    description: 'Force purge and deletion of S3 bucket defined. Any file contained there will be destroyed. `stack_destroy` must also be `true`'
+  tf_state_bucket:
+    description: 'AWS S3 bucket to use for Terraform state. Defaults to `${org}-${repo}-{branch}-tf-state`'
     required: false
-
-
+  tf_state_bucket_destroy:
+    description: 'Force purge and deletion of S3 bucket defined. Any file contained there will be destroyed. `tf_stack_destroy` must also be `true`'
+    required: false
   # ENV files
-  repo_env:
+  env_aws_secret:
+    description: 'Secret name to pull env variables from AWS Secret Manager, could be a comma separated list, read in order. Expected JSON content.'
+    required: false
+  env_repo:
     description: 'File containing environment variables to be used with the app'
     required: false
-    default: 'repo_env'
-  dot_env:
+  env_ghs:
     description: '`.env` file to be used with the app from Github secrets'
     required: false
-  ghv_env:
+  env_ghv:
     description: '`.env` file to be used with the app from Github variables'
-    required: false
-  aws_secret_env:
-    description: 'Secret name to pull env variables from AWS Secret Manager'
     required: false
 
   # EC2 Instance
-  ec2_instance_profile:
-    description: 'The AWS IAM instance profile to use for the EC2 instance'
+  aws_ec2_instance_create:
+    description: 'Define if an EC2 instance should be created'
     required: false
-  ec2_instance_type: 
-    description: 'The AWS Instance type'
+  aws_ec2_ami_filter:
+    description: 'AWS AMI Filter string. Will be used to lookup for lates image based on the string. Defaults to `ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*`.'
     required: false
-  ec2_ami_id:
-    description: 'AWS AMI ID. Will default to the latest Ubuntu 22.04 server image (HVM) '
+  aws_ec2_ami_owner:
+    description: 'Owner of AWS AMI image. This ensures the provider is the one we are looking for. Defaults to `099720109477`, Canonical (Ubuntu).'
     required: false
-  ec2_ami_update:
+  aws_ec2_ami_id:
+    description: 'AWS AMI ID. Will default to lookup for latest image of the `aws_ec2_ami_filter` string. This will override `aws_ec2_ami_filter` lookup.'
+    required: false
+  aws_ec2_ami_update:
     description: 'Set this to true if you want to recreate the EC2 instance if there is a newer version of the AMI.'
     required: false
-  ec2_volume_size: 
-    description: 'The size of the volume (in GB) on the AWS Instance'
+  aws_ec2_iam_instance_profile:
+    description: 'The AWS IAM instance profile to use for the EC2 instance'
     required: false
-    default: "8"
-  ec2_root_preserve:
+  aws_ec2_instance_type: 
+    description: 'The AWS Instance type'
+    required: false
+  aws_ec2_instance_root_vol_size:
+    description: 'Define the volume size (in GiB) for the root volume on the AWS Instance.'
+    required: false
+  aws_ec2_instance_root_vol_preserve:
     description: 'Set this to true to avoid deletion of root volume on termination. Defaults to false.'
     required: false
-  ec2_security_group_name:
+  aws_ec2_security_group_name:
     description: 'The name of the EC2 security group'
     required: false
-  ec2_create_keypair_sm:
+  aws_ec2_create_keypair_sm:
     required: false
     description: 'Generates and manages a secret manager entry that contains the public and private keys created for the ec2 instance.'
-  ec2_instance_public_ip:
+  aws_ec2_instance_public_ip:
     description: 'Add a public IP to the instance or not. (Not an Elastic IP)'
     required: false
-  ec2_user_data_file: 
+  aws_ec2_port_list:
+    description: 'List of ports to be enabled as an ingress rule in the EC2 SG, in a [xx,yy] format - Not the ELB'
+    required: false
+  aws_ec2_user_data_file:
     description: 'Relative path in the repo for a user provided script to be executed with Terraform EC2 Instance creation.'
     required: false
     default: 'no-file-provided'
-  ec2_user_data_replace_on_change:
+  aws_ec2_user_data_replace_on_change:
     description: 'If user_data file changes, instance will stop and start. Hence public IP will change. Defaults to true.'
     required: false
-  ec2_additional_tags:
+  aws_ec2_additional_tags:
     description: 'A JSON object of additional tags that will be included on created resources. Example: `{"key1": "value1", "key2": "value2"}`'
     required: false
 
@@ -136,18 +150,59 @@ inputs:
   aws_vpc_subnet_id:
     description: 'Specify a Subnet to be used with the instance. If none provided, will pick one.'
     required: false
+  aws_vpc_enable_nat_gateway:
+    description: 'Enables NAT gateway'
+    required: false
+  aws_vpc_single_nat_gateway:
+    description: 'Creates only one NAT gateway'
+    required: false
+  aws_vpc_external_nat_ip_ids:
+    description: 'Comma separated list of IP IDS to reuse in the NAT gateways'
+    required: false
   aws_vpc_additional_tags:
     description: 'A JSON object of additional tags that will be included on created resources. Example: `{"key1": "value1", "key2": "value2"}`'
     required: false
 
-  # Stack management
-  stack_destroy:
-    description: 'Set to "true" to Destroy the stack.'
+  # Legacy vars - new names after #
+  # Env-secret
+  aws_secret_env: # env_aws_secret
     required: false
-
+  repo_env: # env_repo
+    required: false
+  dot_env: # env_ghs
+    required: false
+  ghv_env: # env_ghv
+    required: false
+  # Stack management
+  stack_destroy: # tf_stack_destroy
+    required: false
   # Terraform
-  additional_tags:
-    description: 'A JSON object of additional tags that will be included on created resources. Example: `{"key1": "value1", "key2": "value2"}`'
+  additional_tags: # aws_additional_tags
+    required: false
+  # EC2 Instance
+  ec2_instance_profile: # aws_ec2_iam_instance_profile
+    required: false
+  ec2_instance_type: # aws_ec2_instance_type
+    required: false
+  ec2_ami_id: # aws_ec2_ami_id
+    required: false
+  ec2_ami_update: # aws_ec2_ami_update
+    required: false
+  ec2_volume_size: # aws_ec2_instance_root_vol_size
+    required: false
+  ec2_root_preserve: # aws_ec2_instance_root_vol_preserve
+    required: false
+  ec2_security_group_name: # aws_ec2_security_group_name
+    required: false
+  ec2_create_keypair_sm: # aws_ec2_create_keypair_sm
+    required: false
+  ec2_instance_public_ip: # aws_ec2_instance_public_ip
+    required: false
+  ec2_user_data_file: # aws_ec2_user_data_file
+    required: false
+  ec2_user_data_replace_on_change: # aws_ec2_user_data_replace_on_change
+    required: false
+  ec2_additional_tags: # aws_ec2_additional_tags
     required: false
 
 outputs:
@@ -193,7 +248,7 @@ runs:
 
     - name: Deploy with BitOps
       id: deploy
-      uses: bitovi/github-actions-commons@v0.0.7
+      uses: bitovi/github-actions-commons@v0.0.13
       with:
         # Current repo vars
         gh_action_repo: ${{ github.action_path }}
@@ -203,7 +258,7 @@ runs:
         ansible_skip: true
 
         # Action main inputs
-        tf_stack_destroy: ${{ inputs.stack_destroy }}
+        tf_stack_destroy: ${{ inputs.tf_stack_destroy || inputs.stack_destroy }}
         tf_state_bucket: ${{ inputs.tf_state_bucket }}
         tf_state_file_name: ${{ inputs.tf_state_file_name }}
         tf_state_file_name_append: ${{ inputs.tf_state_file_name_append }}
@@ -216,28 +271,31 @@ runs:
         aws_session_token: ${{ inputs.aws_session_token }}
         aws_default_region: ${{ inputs.aws_default_region }}
         aws_resource_identifier: ${{ inputs.aws_resource_identifier }}
-        aws_additional_tags: ${{ inputs.additional_tags }}
+        aws_additional_tags: ${{ inputs.aws_additional_tags || inputs.additional_tags }}
 
         # ENV
-        env_aws_secret: ${{ inputs.aws_secret_env }}
-        env_repo: ${{ inputs.repo_env }}
-        env_ghs: ${{ inputs.dot_env }}
-        env_ghv: ${{ inputs.ghv_env }}
+        env_aws_secret: ${{ inputs.env_aws_secret || inputs.aws_secret_env }}
+        env_repo: ${{ inputs.env_repo || inputs.repo_env }}
+        env_ghs: ${{ inputs.env_ghs || inputs.dot_env }}
+        env_ghv: ${{ inputs.env_ghv || inputs.ghv_env }}
 
-        # EC2
+        # EC2 Instance
         aws_ec2_instance_create: true
-        aws_ec2_ami_id: ${{ inputs.ec2_ami_id }}
-        aws_ec2_ami_update: ${{ inputs.ec2_ami_update }}
-        aws_ec2_iam_instance_profile: ${{ inputs.ec2_instance_profile }}
-        aws_ec2_instance_type: ${{ inputs.ec2_instance_type }}
-        aws_ec2_instance_root_vol_size: ${{ inputs.ec2_volume_size }}
-        aws_ec2_instance_root_vol_preserve: ${{ inputs.ec2_root_preserve }}
-        aws_ec2_security_group_name: ${{ inputs.aws_ec2_security_group_name }}
-        aws_ec2_create_keypair_sm: ${{ inputs.create_keypair_sm_entry }}
-        aws_ec2_instance_public_ip: ${{ inputs.ec2_instance_public_ip }}
+        aws_ec2_ami_filter: ${{ inputs.aws_ec2_ami_filter }}
+        aws_ec2_ami_owner: ${{ inputs.aws_ec2_ami_owner }}
+        aws_ec2_ami_id: ${{ inputs.aws_ec2_ami_id || inputs.ec2_ami_id }}
+        aws_ec2_ami_update: ${{ inputs. aws_ec2_ami_update || inputs.ec2_ami_update }}
+        aws_ec2_iam_instance_profile: ${{ inputs.aws_ec2_iam_instance_profile inputs.ec2_instance_profile }}
+        aws_ec2_instance_type: ${{ inputs.aws_ec2_instance_type || inputs.ec2_instance_type }} 
+        aws_ec2_instance_root_vol_size: ${{ inputs.aws_ec2_instance_root_vol_size || inputs.ec2_volume_size }}
+        aws_ec2_instance_root_vol_preserve: ${{ inputs.aws_ec2_instance_root_vol_preserve || inputs.ec2_root_preserve }}
+        aws_ec2_security_group_name: ${{ inputs.aws_ec2_security_group_name || inputs.aws_ec2_security_group_name }}
+        aws_ec2_create_keypair_sm: ${{ inputs.aws_ec2_create_keypair_sm || inputs.create_keypair_sm_entry }}
+        aws_ec2_instance_public_ip: ${{ inputs.aws_ec2_instance_public_ip || inputs.ec2_instance_public_ip }}
+        aws_ec2_port_list: ${{ inputs.aws_ec2_port_list }}
         aws_ec2_user_data_file: '../bitovi-user-data.sh'
-        aws_ec2_user_data_replace_on_change: ${{ inputs.ec2_user_data_replace_on_change }}
-        aws_ec2_additional_tags: ${{ inputs.ec2_additional_tags }}
+        aws_ec2_user_data_replace_on_change: ${{ inputs.aws_ec2_user_data_replace_on_change || inputs.ec2_user_data_replace_on_change }}
+        aws_ec2_additional_tags: ${{ inputs.aws_ec2_additional_tags || inputs.ec2_additional_tags }}
 
         ## AWS VPC
         aws_vpc_create: ${{ inputs.aws_vpc_create }}
@@ -248,6 +306,9 @@ runs:
         aws_vpc_availability_zones: ${{ inputs.aws_vpc_availability_zones }}
         aws_vpc_id: ${{ inputs.aws_vpc_id }}
         aws_vpc_subnet_id: ${{ inputs.aws_vpc_subnet_id }}
+        aws_vpc_enable_nat_gateway: ${{ inputs.aws_vpc_enable_nat_gateway }}
+        aws_vpc_single_nat_gateway: ${{ inputs.aws_vpc_single_nat_gateway }}
+        aws_vpc_external_nat_ip_ids: ${{ inputs.aws_vpc_external_nat_ip_ids }}
         aws_vpc_additional_tags: ${{ inputs.aws_vpc_additional_tags }}
 
         # AWS ELB
