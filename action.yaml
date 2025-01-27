@@ -249,7 +249,7 @@ runs:
 
     - name: Deploy with BitOps
       id: deploy
-      uses: bitovi/github-actions-commons@v1
+      uses: bitovi/github-actions-commons@fix_ecr_action
       with:
         # Current repo vars
         gh_action_repo: ${{ github.action_path }}
